@@ -1,0 +1,872 @@
+<head>
+<link rel="icon" href="https://i.ibb.co/Jt89VHG/logo.png" type="image/x-icon">
+<style>
+    body {
+        background-image: url('https://i.postimg.cc/MHbvKCDq/istockphoto-152049839-612x612.jpg');
+        background-repeat: no-repeat;
+        background-size: cover;
+        color: #2c3e50;
+        font-family: Arial, sans-serif;
+        text-align: center;
+        height: 100vh;
+        margin: 0;
+        padding: 0;
+    }
+    h1, h2 {
+        color: #D4AF37;
+    }
+    #result {
+        color: #fff;
+        font-size: 24px;
+        font-weight: bold;
+        margin-top: 20px;
+    }
+    .dice {
+        width: 200px;
+        margin: 20px auto;
+        position: relative;
+    }
+    #diceImg {
+        width: 100%;
+    }
+    button {
+        padding: 10px 20px;
+        background-color: #27AE60;
+        color: #ffffff;
+        border: none;
+        cursor: pointer;
+        margin: 5px;
+        transition: background-color 0.3s;
+    }
+    button:hover {
+        background-color: #1E8449;
+    }
+    .betting-interface, .withdrawal-interface, .auth-interface, .history-interface {
+        margin: 20px;
+        background-color: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        padding: 20px;
+        border-radius: 10px;
+    }
+    .balance-section {
+        margin: 20px;
+        font-size: 20px;
+    }
+    .input-group {
+        margin: 10px 0;
+    }
+    .input-group input, .input-group select {
+        background-color: #ECF0F1;
+        color: #2c3e50;
+        border: 1px solid #1abc9c;
+        padding: 5px;
+        border-radius: 5px;
+    }
+    .dropdown {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 1;
+    }
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #27AE60;
+        min-width: 160px;
+        box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+        padding: 12px 16px;
+        border-radius: 5px;
+        color: #ffffff;
+    }
+    .dropdown:hover .dropdown-content {
+        display: block;
+    }
+    #musicControls {
+        position: fixed;
+        bottom: 10px;
+        left: 10px;
+        background-color: rgba(255, 255, 255, 0.7);
+        padding: 5px;
+        border-radius: 5px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    #playPauseBtn {
+        font-size: 10px;
+        padding: 4px 8px;
+        background-color: #27AE60;
+        color: white;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+    }
+    #volumeSlider {
+        width: 60px;
+        margin: 5px 0;
+    }
+    #musicSelector {
+        font-size: 10px;
+        margin-top: 5px;
+        width: 70px;
+    }
+    @keyframes roll {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    @media (max-width: 600px) {
+        #musicControls {
+            padding: 3px;
+        }
+        #playPauseBtn {
+            font-size: 8px;
+            padding: 3px 6px;
+        }
+        #volumeSlider {
+            width: 50px;
+        }
+        #musicSelector {
+            font-size: 8px;
+            width: 60px;
+        }
+    }
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+    .loading-spinner {
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    .custom-popup {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #f0f0f0;
+        border: 2px solid #3498db;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+        max-width: 80%;
+        text-align: center;
+    }
+    .custom-popup-content {
+        margin-bottom: 20px;
+    }
+    .custom-popup-close {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    #downloadBtn {
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        z-index: 1000;
+    }
+    #downloadBtn:hover {
+        background-color: #2980b9;
+    }
+    .history-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+    .history-table th, .history-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+    .history-table th {
+        background-color: #f2f2f2;
+    }
+    .history-table tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+    /* Additional styles for About Us page */
+    #aboutUsInterface {
+        margin: 20px;
+        background-color: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        padding: 20px;
+        border-radius: 10px;
+        text-align: left;
+        position: relative;
+    }
+
+    #aboutUsInterface h2 {
+        color: #3498db;
+        margin-bottom: 15px;
+    }
+
+    #aboutUsInterface p {
+        line-height: 1.6;
+        margin-bottom: 10px;
+    }
+
+    .tiny-support-link {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        font-size: 6px;
+        color: rgba(0, 0, 0, 0.3);
+        text-decoration: none;
+        cursor: pointer;
+        transition: color 0.3s ease;
+    }
+
+    .tiny-support-link:hover {
+        color: rgba(0, 0, 0, 0.6);
+    }
+
+    /* Style for support email behavior */
+    .tiny-support-link:active {
+        transform: scale(0.95);
+    }
+
+    .tiny-support-link:focus {
+        outline: none;
+    }
+
+    .contact-email {
+        color: rgba(0, 0, 0, 0.1); /* Semi-transparent text */
+        font-size: 0.8em;
+        margin-top: 20px;
+        position: relative;
+        text-align: center;
+    }
+
+    .contact-email a {
+        color: inherit;
+        text-decoration: none;
+        cursor: default;
+    }
+
+    .contact-email:hover {
+        color: rgba(0, 0, 0, 0.8);
+    }
+</style>
+<script src="https://js.paystack.co/v1/inline.js"></script>
+</head>
+<body>
+<div id="loadingOverlay" class="loading-overlay" style="display:none;">
+    <div class="loading-spinner"></div>
+</div>
+
+<div id="authInterface" class="auth-interface">
+    <h2>Welcome to Dice Roll Game</h2>
+    <div id="loginForm">
+        <h3>Login</h3>
+        <form method="GET" action="https://example.com/login">
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <input type="text" name="username" placeholder="Username (optional)">
+            <button type="submit">Login</button>
+        </form>
+        <p>Don't have an account? <a href="#" id="showSignup">Sign up</a></p>
+    </div>
+    <div id="signupForm" style="display:none;">
+        <h3>Sign Up</h3>
+        <form method="GET" action="https://example.com/signup">
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <input type="text" name="referralCode" placeholder="Referral Code (Optional)">
+            <button type="submit">Sign Up</button>
+        </form>
+        <p>Already have an account? <a href="#" id="showLogin">Login</a></p>
+    </div>
+</div>
+
+<div id="gameInterface" style="display:none;">
+    <h1>Dice Roll Game</h1>
+    <div class="balance-section">
+        <h2>Balance: <span id="balance">₦100.00</span></h2>
+    </div>
+    <div class="betting-interface">
+        <h2>Roll Dice</h2>
+        <div class="input-group">
+            <label for="betAmount">Bet Amount (₦):</label>
+            <input type="number" id="betAmount" min="30" step="0.001" value="30">
+        </div>
+        <div class="input-group">
+            <label for="betNumber">Choose a Number (1-6):</label>
+            <input type="number" id="betNumber" min="1" max="6">
+        </div>
+        <button id="placeBetBtn">Roll Dice</button>
+    </div>
+    <div class="dice" style="margin-top: 20px;">
+        <img src="https://i.postimg.cc/d0dt3QLT/output-onlinegiftools_(3).gif" alt="Dice Roll" id="diceImg" style="display: none;">
+    </div>
+    <div id="result"></div>
+    <div class="dropdown">
+      <button class="dropdown-btn" style="background-color: #7F8C8D; color: #fff;">Menu</button>
+      <div class="dropdown-content">
+          <button id="profileBtn">Profile</button>
+          <button id="historyBtn">History</button>
+          <button id="fiatWithdraw">Fiat Withdrawal</button>
+          <button id="aboutUsBtn">About Us</button>
+          <button id="logoutBtn">Logout</button>
+          <div class="withdrawal-interface" id="fiatWithdrawForm" style="display: none;">
+        <h2>Fiat Withdrawal</h2>
+        <div class="input-group">
+            <label for="fiatWithdrawAmount">Withdrawal Amount (₦):</label>
+            <input type="number" id="fiatWithdrawAmount" min="5000" step="1" placeholder="Minimum ₦5000">
+        </div>
+        <div class="input-group">
+            <label for="bankSelect">Select Bank:</label>
+            <select id="bankSelect">
+                <option value="">-- Select Bank --</option>
+                <option value="opay">OPay</option>
+                <option value="kuda">Kuda Bank</option>
+                <option value="palmpay">PalmPay</option>
+                <option value="moniepoint">Moniepoint</option>
+                <option value="gtb">Guaranty Trust Bank</option>
+                <option value="firstbank">First Bank</option>
+                <option value="uba">United Bank for Africa</option>
+                <option value="zenith">Zenith Bank</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label for="accountNumber">Account Number:</label>
+            <input type="text" id="accountNumber" placeholder="Enter account number">
+        </div>
+        <div class="input-group">
+            <label for="accountName">Account Name:</label>
+            <input type="text" id="accountName" placeholder="Enter account name">
+        </div>
+        <button id="verifyAccount">Verify Account</button>
+        <button id="confirmWithdraw" style="display: none;">Confirm Withdrawal</button>
+    </div>
+          <p>Crypto withdrawal is coming soon. Please use fiat withdrawal for your withdrawal and deposit.</p>
+      </div>
+    </div>
+    <div id="deposit">
+        <h2>Deposit Funds</h2>
+        <p>Choose a payment method:</p>
+        <button id="cryptoDeposit">Crypto Deposit</button>
+        <button id="fiatDeposit">Fiat Deposit</button>
+        <button id="confirmDeposit" style="display: none;">Deposit Now</button>
+        <input type="number" id="depositAmount" style="display: none;" placeholder="Amount Sent (₦)" value="15000" min="500">
+    </div>
+
+    <div id="musicControls">
+        <button id="playPauseBtn">Play/Pause</button>
+        <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="0.5">
+        <select id="musicSelector">
+            <option value="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3">Music 1</option>
+            <option value="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3">Music 2</option>
+            <option value="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3">Music 3</option>
+            <option value="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3">Music 4</option>
+            <option value="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-12.mp3">Music 5</option>
+        </select>
+    </div>
+    <div class="contact-email">
+        Contact Support: <a href="/cdn-cgi/l/email-protection#87eee9e1e8a9e3eee4e2f5e8ebebeee9e0e0e6eae2c7e0eae6eeeba9e4e8ea"><span class="__cf_email__" data-cfemail="0c65626a632268656f697e63606065626b6b6d61694c6b616d6560226f6361">[email&#160;protected]</span></a>
+    </div>
+</div>
+
+<div id="historyInterface" class="history-interface" style="display:none;">
+    <h2>Activity History</h2>
+    <div id="historyContent"></div>
+    <button id="closeHistoryBtn">Close History</button>
+</div>
+
+<div id="aboutUsInterface" style="display:none;">
+    <h2>About Us - Dice Roll Game</h2>
+    <p>Welcome to Dice Roll Game, the ultimate online betting experience where luck meets strategy! Our platform offers a fun and secure gaming environment, allowing users to deposit, bet, and withdraw their winnings seamlessly.</p>
+    
+    <h3>Our Mission</h3>
+    <p>At Dice Roll Game, we aim to provide:</p>
+    <ul>
+        <li>A fair and transparent gaming system</li>
+        <li>Fast and secure deposit and withdrawal methods</li>
+        <li>A responsible gaming environment</li>
+    </ul>
+    
+    <h3>Why Choose Us?</h3>
+    <p>Provably Fair Gameplay: Every dice roll is random and cannot be manipulated.</p>
+    <p>Instant Deposits: Secure transactions through trusted payment methods.</p>
+    <p>24/7 Customer Support: Our team is always available to assist.</p>
+    <p>Exciting Rewards: Earn referral bonuses, win bets, and enjoy promotions.</p>
+    
+    <h3>Responsible Gaming</h3>
+    <p>We encourage responsible gaming. If you feel you need help managing your gaming habits, we provide tools to set deposit limits and self-exclude.</p>
+    
+    <button id="closeAboutUsBtn">Close About Us</button>
+    <a href="/cdn-cgi/l/email-protection#30595e565f1e54595355425f5c5c595e5757515d5570575d51595c1e535f5d0f4345525a5553440d7459535510625f5c5c1077515d5510634540405f424416525f54490d605c5551435510545543534259525510495f4542105943434555105f4210425541455543440a" class="tiny-support-link">Contact Support</a>
+</div>
+
+<button id="downloadBtn">Download App</button>
+
+<audio id="backgroundMusic" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" loop></audio>
+<audio id="loseSound" src="https://freesound.org/data/previews/76/76376_1079458-lq.mp3"></audio>
+<audio id="winSound" src="https://freesound.org/data/previews/456/456966_9482924-lq.mp3"></audio>
+<audio id="depositSuccessSound" src="https://freesound.org/data/previews/270/270404_5123851-lq.mp3"></audio>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    const authInterface = document.getElementById('authInterface');
+    const gameInterface = document.getElementById('gameInterface');
+    const historyInterface = document.getElementById('historyInterface');
+    const aboutUsInterface = document.getElementById('aboutUsInterface');
+    const loginForm = document.getElementById('loginForm');
+    const signupForm = document.getElementById('signupForm');
+    const showSignupLink = document.getElementById('showSignup');
+    const showLoginLink = document.getElementById('showLogin');
+    const profileBtn = document.getElementById('profileBtn');
+    const historyBtn = document.getElementById('historyBtn');
+    const closeHistoryBtn = document.getElementById('closeHistoryBtn');
+    const aboutUsBtn = document.getElementById('aboutUsBtn');
+    const closeAboutUsBtn = document.getElementById('closeAboutUsBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const rollBtn = document.getElementById('rollBtn');
+    const diceImg = document.getElementById('diceImg');
+    const resultDiv = document.getElementById('result');
+    const placeBetBtn = document.getElementById('placeBetBtn');
+    const betAmountInput = document.getElementById('betAmount');
+    const betNumberInput = document.getElementById('betNumber');
+    const balanceSpan = document.getElementById('balance');
+    const cryptoDepositBtn = document.getElementById('cryptoDeposit');
+    const fiatDepositBtn = document.getElementById('fiatDeposit');
+    const confirmDepositBtn = document.getElementById('confirmDeposit');
+    const depositAmountInput = document.getElementById('depositAmount');
+    const fiatWithdrawBtn = document.getElementById('fiatWithdraw');
+    const fiatWithdrawForm = document.getElementById('fiatWithdrawForm');
+    const fiatWithdrawAmountInput = document.getElementById('fiatWithdrawAmount');
+    const bankSelect = document.getElementById('bankSelect');
+    const accountNumberInput = document.getElementById('accountNumber');
+    const accountNameInput = document.getElementById('accountName');
+    const verifyAccountBtn = document.getElementById('verifyAccount');
+    const confirmWithdrawBtn = document.getElementById('confirmWithdraw');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    const backgroundMusic = document.getElementById('backgroundMusic');
+    const loseSound = document.getElementById('loseSound');
+    const winSound = document.getElementById('winSound');
+    const depositSuccessSound = document.getElementById('depositSuccessSound');
+
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const volumeSlider = document.getElementById('volumeSlider');
+    const musicSelector = document.getElementById('musicSelector');
+
+    let balance = parseFloat(localStorage.getItem('balance')) || 100;
+    let isLoggedIn = false;
+    let currentUser = null;
+
+    function updateBalance(amount) {
+        balance += amount;
+        balanceSpan.textContent = `₦${balance.toFixed(2)}`;
+        localStorage.setItem('balance', balance);
+    }
+
+    function generateReferralCode() {
+        return Math.random().toString(36).substring(2, 8).toUpperCase();
+    }
+
+    function showGame() {
+        loadingOverlay.style.display = 'flex';
+        setTimeout(() => {
+            authInterface.style.display = 'none';
+            gameInterface.style.display = 'block';
+            historyInterface.style.display = 'none';
+            aboutUsInterface.style.display = 'none';
+            loadingOverlay.style.display = 'none';
+            updateBalance(0);
+        }, 3000);
+    }
+
+    function showAuth() {
+        authInterface.style.display = 'block';
+        gameInterface.style.display = 'none';
+        historyInterface.style.display = 'none';
+        aboutUsInterface.style.display = 'none';
+    }
+
+    function showCustomPopup(message) {
+        const popup = document.createElement('div');
+        popup.className = 'custom-popup';
+        popup.innerHTML = `
+            <div class="custom-popup-content">${message}</div>
+            <button class="custom-popup-close">Close</button>
+        `;
+        document.body.appendChild(popup);
+        popup.querySelector('.custom-popup-close').addEventListener('click', () => {
+            document.body.removeChild(popup);
+        });
+    }
+
+    function addToHistory(action, amount, details) {
+        let history = JSON.parse(localStorage.getItem(`${currentUser.email}_history`)) || [];
+        history.push({
+            action,
+            amount,
+            details,
+            timestamp: new Date().toISOString()
+        });
+        localStorage.setItem(`${currentUser.email}_history`, JSON.stringify(history));
+    }
+
+    function displayHistory() {
+        let history = JSON.parse(localStorage.getItem(`${currentUser.email}_history`)) || [];
+        let historyContent = document.getElementById('historyContent');
+        if (history.length === 0) {
+            historyContent.innerHTML = '<p>No activity history available.</p>';
+        } else {
+            let tableHTML = `
+                <table class="history-table">
+                    <tr>
+                        <th>Date</th>
+                        <th>Action</th>
+                        <th>Amount</th>
+                        <th>Details</th>
+                    </tr>
+            `;
+            history.forEach(item => {
+                tableHTML += `
+                    <tr>
+                        <td>${new Date(item.timestamp).toLocaleString()}</td>
+                        <td>${item.action}</td>
+                        <td>₦${item.amount.toFixed(2)}</td>
+                        <td>${item.details}</td>
+                    </tr>
+                `;
+            });
+            tableHTML += '</table>';
+            historyContent.innerHTML = tableHTML;
+        }
+    }
+
+    showSignupLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        loginForm.style.display = 'none';
+        signupForm.style.display = 'block';
+    });
+
+    showLoginLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        signupForm.style.display = 'none';
+        loginForm.style.display = 'block';
+    });
+
+    loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = e.target.email.value;
+        const password = e.target.password.value;
+        const username = e.target.username.value;
+        const user = JSON.parse(localStorage.getItem(email));
+        if (user && user.password === password) {
+            currentUser = user;
+            isLoggedIn = true;
+            showGame();
+        } else {
+            showCustomPopup('Invalid email or password');
+        }
+    });
+
+    signupForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const username = e.target.username.value;
+        const email = e.target.email.value;
+        const password = e.target.password.value;
+        const referralCode = e.target.referralCode.value;
+        if (localStorage.getItem(email)) {
+            showCustomPopup('Email already exists');
+            return;
+        }
+        const newUser = {
+            username,
+            email,
+            password,
+            referralCode: generateReferralCode(),
+            balance: 100,
+            referredBy: referralCode || null
+        };
+        localStorage.setItem(email, JSON.stringify(newUser));
+        if (referralCode) {
+            const referrer = Object.values(localStorage).find(item => {
+                try {
+                    const parsed = JSON.parse(item);
+                    return parsed.referralCode === referralCode;
+                } catch {
+                    return false;
+                }
+            });
+            if (referrer) {
+                const referrerData = JSON.parse(referrer);
+                referrerData.balance += 20; // 20% of 100 (new user's initial balance)
+                localStorage.setItem(referrerData.email, JSON.stringify(referrerData));
+                addToHistory('Referral Bonus', 20, `New user signup: ${email}`);
+            }
+        }
+        currentUser = newUser;
+        isLoggedIn = true;
+        addToHistory('Sign Up', 100, 'Initial balance');
+        showGame();
+    });
+
+    profileBtn.addEventListener('click', () => {
+        if (currentUser) {
+            let referralBalance = 0;
+            Object.values(localStorage).forEach(item => {
+                try {
+                    const user = JSON.parse(item);
+                    if (user.referredBy === currentUser.referralCode) {
+                        referralBalance += 20; // 20% of 100 (new user's initial balance)
+                    }
+                } catch {}
+            });
+            showCustomPopup(`Username: ${currentUser.username}<br>Email: ${currentUser.email}<br>Referral Code: ${currentUser.referralCode}<br>Referral Balance: ₦${referralBalance.toFixed(2)}`);
+        }
+    });
+
+    historyBtn.addEventListener('click', () => {
+        gameInterface.style.display = 'none';
+        historyInterface.style.display = 'block';
+        aboutUsInterface.style.display = 'none';
+        displayHistory();
+    });
+
+    closeHistoryBtn.addEventListener('click', () => {
+        historyInterface.style.display = 'none';
+        gameInterface.style.display = 'block';
+        aboutUsInterface.style.display = 'none';
+    });
+
+    aboutUsBtn.addEventListener('click', () => {
+        gameInterface.style.display = 'none';
+        historyInterface.style.display = 'none';
+        aboutUsInterface.style.display = 'block';
+    });
+
+    closeAboutUsBtn.addEventListener('click', () => {
+        aboutUsInterface.style.display = 'none';
+        gameInterface.style.display = 'block';
+    });
+
+    logoutBtn.addEventListener('click', () => {
+        isLoggedIn = false;
+        currentUser = null;
+        showAuth();
+        showCustomPopup('You have been logged out successfully.');
+    });
+
+    placeBetBtn.addEventListener('click', () => {
+        if (!isLoggedIn) {
+            showCustomPopup('Please log in to play');
+            return;
+        }
+        let betAmount = parseFloat(betAmountInput.value);
+        let betNumber = parseInt(betNumberInput.value);
+
+        if (isNaN(betAmount) || betAmount < 30) {
+            showCustomPopup('Please enter a valid bet amount (₦30 minimum).');
+            return;
+        }
+
+        if (isNaN(betNumber) || betNumber < 1 || betNumber > 6) {
+            showCustomPopup('Please choose a number between 1 and 6.');
+            return;
+        }
+
+        if (betAmount > balance) {
+            showCustomPopup('Insufficient balance.');
+            return;
+        }
+
+        updateBalance(-betAmount);
+        addToHistory('Bet', -betAmount, `Bet on number ${betNumber}`);
+
+        diceImg.style.display = 'block';
+        diceImg.style.animation = 'roll 2s infinite';
+        resultDiv.textContent = 'Rolling dice...';
+        setTimeout(() => {
+            let diceResult = Math.floor(Math.random() * 6) + 1;
+            diceImg.style.display = 'none';
+            diceImg.style.animation = '';
+            if (diceResult === betNumber) {
+                resultDiv.textContent = `Won - you rolled ${diceResult}`;
+                resultDiv.style.color = '#2ecc71';
+                updateBalance(betAmount * 2);
+                addToHistory('Win', betAmount * 2, `Won on number ${diceResult}`);
+                winSound.play();
+            } else {
+                resultDiv.textContent = `Lost - you rolled ${diceResult}`;
+                resultDiv.style.color = '#e74c3c';
+                loseSound.play();
+            }
+        }, 2000);
+    });
+
+    fiatDepositBtn.addEventListener('click', () => {
+        depositAmountInput.style.display = 'block';
+        confirmDepositBtn.style.display = 'block';
+    });
+
+    cryptoDepositBtn.addEventListener('click', () => {
+        showCustomPopup('Crypto deposit is coming soon. Please use fiat deposit for now.');
+    });
+
+    confirmDepositBtn.addEventListener('click', () => {
+        let depositAmount = parseFloat(depositAmountInput.value);
+        if (isNaN(depositAmount) || depositAmount < 500) {
+            showCustomPopup('Please enter a valid deposit amount (₦500 minimum).');
+            return;
+        }
+        payWithPaystack(depositAmount);
+    });
+
+    function payWithPaystack(amount) {
+        let handler = PaystackPop.setup({
+            key: 'pk_live_342eab193485c80dd1f3936ddd590723a3817145',
+            email: currentUser.email,
+            amount: amount * 100, // Paystack expects the amount in kobo
+            currency: 'NGN',
+            callback: function(response) {
+                verifyTransaction(response.reference, amount);
+            },
+            onClose: function() {
+                showCustomPopup('Transaction was not completed.');
+            }
+        });
+        handler.openIframe();
+    }
+
+    function verifyTransaction(reference, amount) {
+        // This is a mock verification. In a real application, you would verify on your server.
+        showCustomPopup('Deposit successful!');
+        updateBalance(amount);
+        addToHistory('Deposit', amount, `Deposit via Paystack (Ref: ${reference})`);
+        depositSuccessSound.play();
+    }
+
+    fiatWithdrawBtn.addEventListener('click', () => {
+        fiatWithdrawForm.style.display = 'block';
+    });
+
+    verifyAccountBtn.addEventListener('click', () => {
+        let withdrawalAmount = parseFloat(fiatWithdrawAmountInput.value);
+        let bank = bankSelect.value;
+        let accountNumber = accountNumberInput.value;
+        let accountName = accountNameInput.value;
+
+        if (isNaN(withdrawalAmount) || withdrawalAmount < 5000) {
+            showCustomPopup('Please enter a valid withdrawal amount (₦5000 minimum).');
+            return;
+        }
+
+        if (withdrawalAmount > balance) {
+            showCustomPopup('Insufficient balance for withdrawal.');
+            return;
+        }
+
+        if (!bank || !accountNumber || !accountName) {
+            showCustomPopup('Please fill in all fields.');
+            return;
+        }
+
+        confirmWithdrawBtn.style.display = 'block';
+    });
+
+    confirmWithdrawBtn.addEventListener('click', () => {
+        let withdrawalAmount = parseFloat(fiatWithdrawAmountInput.value);
+        let bank = bankSelect.value;
+        let accountNumber = accountNumberInput.value;
+        let accountName = accountNameInput.value;
+
+        sendWithdrawalDetails(withdrawalAmount, bank, accountNumber, accountName);
+
+        fiatWithdrawForm.style.display = 'none';
+        fiatWithdrawAmountInput.value = '';
+        bankSelect.value = '';
+        accountNumberInput.value = '';
+        accountNameInput.value = '';
+    });
+
+    function sendWithdrawalDetails(amount, bank, accountNumber, accountName) {
+        console.log("Current balance before withdrawal:", balance);
+        console.log("Requested withdrawal amount:", amount);
+        
+        fetch('https://yourserver.com/api/withdraw', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                amount: amount,
+                bank: bank,
+                accountNumber: accountNumber,
+                accountName: accountName,
+                email: currentUser.email
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showCustomPopup('Withdrawal successful. Processing within 24 hours.');
+                updateBalance(-amount);
+                addToHistory('Withdrawal', -amount, `Withdrawal to ${bank} - ${accountNumber}`);
+            } else {
+                showCustomPopup('Withdrawal failed. Try again later.');
+            }
+        })
+        .catch(error => {
+            console.error('Error processing withdrawal:', error);
+            showCustomPopup('Network error. Try again later.');
+        });
+    }
+
+    playPauseBtn.addEventListener('click', () => {
+        if (backgroundMusic.paused) {
+            backgroundMusic.play();
+        } else {
+            backgroundMusic.pause();
+        }
+    });
+
+    volumeSlider.addEventListener('input', () => {
+        backgroundMusic.volume = volumeSlider.value;
+    });
+
+    musicSelector.addEventListener('change', () => {
+        backgroundMusic.src = musicSelector.value;
+        backgroundMusic.play();
+    });
+
+    document.querySelector('.contact-email').addEventListener('mouseover', function() {
+        this.style.transition = 'color 0.3s ease';
+    });
+
+    document.querySelector('.contact-email').addEventListener('mouseout', function() {
+        this.style.transition = 'color 0.3s ease';
+    });
+</script>
+</body>
+</html>
