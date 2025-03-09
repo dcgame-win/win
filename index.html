@@ -274,6 +274,7 @@
             <button type="submit">Login</button>
         </form>
         <p>Don't have an account? <a href="#" id="showSignup">Sign up</a></p>
+        <p><a href="#" id="forgotPassword">Forgot Password?</a></p>
     </div>
     <div id="signupForm" style="display:none;">
         <h3>Sign Up</h3>
@@ -285,6 +286,14 @@
             <button type="submit">Sign Up</button>
         </form>
         <p>Already have an account? <a href="#" id="showLogin">Login</a></p>
+    </div>
+    <div id="forgotPasswordForm" style="display:none;">
+        <h3>Reset Password</h3>
+        <form id="resetPasswordForm">
+            <input type="email" name="resetEmail" placeholder="Enter your email" required>
+            <button type="submit">Reset Password</button>
+        </form>
+        <p><a href="#" id="backToLogin">Back to Login</a></p>
     </div>
 </div>
 
@@ -402,7 +411,7 @@
     <h3>Responsible Gaming</h3>
     <p>We encourage responsible gaming. If you feel you need help managing your gaming habits, we provide tools to set deposit limits and self-exclude.</p>
 
-    <a href="/cdn-cgi/l/email-protection#1871767e77367c717b7d6a77747471767f7f79757d587f75797174367b7775" class="tiny-email-link">Contact Support</a>
+    <a href="/cdn-cgi/l/email-protection#761f18101958121f151304191a1a1f181111171b1336111b171f1a5815191b" class="tiny-email-link">Contact Support</a>
     <button id="closeAboutUsBtn">Close</button>
 </div>
 
@@ -421,8 +430,11 @@
         const aboutUsInterface = document.getElementById('aboutUsInterface');
         const loginForm = document.getElementById('loginForm');
         const signupForm = document.getElementById('signupForm');
+        const forgotPasswordForm = document.getElementById('forgotPasswordForm');
         const showSignupLink = document.getElementById('showSignup');
         const showLoginLink = document.getElementById('showLogin');
+        const forgotPasswordLink = document.getElementById('forgotPassword');
+        const backToLoginLink = document.getElementById('backToLogin');
         const profileBtn = document.getElementById('profileBtn');
         const historyBtn = document.getElementById('historyBtn');
         const closeHistoryBtn = document.getElementById('closeHistoryBtn');
@@ -450,6 +462,7 @@
         const confirmWithdrawBtn = document.getElementById('confirmWithdraw');
         const loadingOverlay = document.getElementById('loadingOverlay');
         const downloadBtn = document.getElementById('downloadBtn');
+        const resetPasswordForm = document.getElementById('resetPasswordForm');
 
         const backgroundMusic = document.getElementById('backgroundMusic');
         const loseSound = document.getElementById('loseSound');
@@ -617,6 +630,41 @@
             isLoggedIn = true;
             addToHistory('Sign Up', 100, 'Initial balance');
             showGame();
+        });
+
+        forgotPasswordLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            loginForm.style.display = 'none';
+            signupForm.style.display = 'none';
+            forgotPasswordForm.style.display = 'block';
+        });
+
+        backToLoginLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            forgotPasswordForm.style.display = 'none';
+            loginForm.style.display = 'block';
+        });
+
+        resetPasswordForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = e.target.resetEmail.value;
+            const user = JSON.parse(localStorage.getItem(email));
+            
+            if (user) {
+                // Generate temporary password
+                const tempPassword = Math.random().toString(36).slice(-8);
+                user.password = tempPassword;
+                localStorage.setItem(email, JSON.stringify(user));
+                
+                // In a real application, you would send this via email
+                // For demo purposes, we'll show it in a popup
+                showCustomPopup(`A temporary password has been generated for your account: ${tempPassword}\n\nPlease use this to login and change your password immediately.`);
+                
+                forgotPasswordForm.style.display = 'none';
+                loginForm.style.display = 'block';
+            } else {
+                showCustomPopup('No account found with this email address.');
+            }
         });
 
         profileBtn.addEventListener('click', () => {
@@ -830,6 +878,24 @@
             });
         }
 
+        downloadBtn.addEventListener('click', function() {
+            const apkUrl = 'https://apk.e-droid.net/apk/app3211285-pdjx7f.apk?v=5';
+            
+            // Create a temporary anchor element
+            const downloadLink = document.createElement('a');
+            downloadLink.href = apkUrl;
+            downloadLink.download = 'DiceRollGame.apk'; // Suggested filename
+            downloadLink.target = '_blank'; // Open in new tab
+            
+            // Trigger download
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            
+            // Show download started message
+            showCustomPopup('Download started! If download doesn\'t begin automatically, please click the link again.');
+        });
+
         playPauseBtn.addEventListener('click', () => {
             if (backgroundMusic.paused) {
                 backgroundMusic.play();
@@ -845,24 +911,6 @@
         musicSelector.addEventListener('change', () => {
             backgroundMusic.src = musicSelector.value;
             backgroundMusic.play();
-        });
-        
-        downloadBtn.addEventListener('click', () => {
-            const downloadUrl = 'https://apk.e-droid.net/apk/app3211285-pdjx7f.apk?v=5';
-            
-            // Create a temporary anchor element
-            const link = document.createElement('a');
-            link.href = downloadUrl;
-            link.setAttribute('download', 'DiceRollGame.apk');
-            
-            // Trigger download
-            link.click();
-            
-            // Show a message to the user
-            showCustomPopup('Download started! Check your downloads folder.');
-            
-            // Clean up
-            link.remove();
         });
     });
 </script>
