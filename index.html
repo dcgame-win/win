@@ -549,6 +549,48 @@
             cursor: pointer;
             color: #333;
         }
+        
+        /* Bet Amount Controls */
+        .bet-controls {
+            display: flex;
+            justify-content: center;
+            margin: 10px 0;
+        }
+        
+        .bet-controls button {
+            margin: 0 5px;
+            font-weight: bold;
+        }
+        
+        /* Profile Section */
+        .profile-interface {
+            display: none;
+            margin: 20px;
+            background-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            position: relative;
+        }
+        
+        .profile-form {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .profile-form input {
+            width: 100%;
+            padding: 8px;
+            margin: 8px 0;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        
+        .profile-section {
+            margin-top: 20px;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
     </style>
     <script src="https://js.paystack.co/v1/inline.js"></script>
 </head>
@@ -588,10 +630,9 @@
         <h2>Welcome to Dice Roll Game</h2>
         <div id="loginForm">
             <h3>Login</h3>
-            <form method="GET" action="https://example.com/login">
+            <form id="loginFormElement">
                 <input type="email" name="email" placeholder="Email" required>
                 <input type="password" name="password" placeholder="Password" required>
-                <input type="text" name="username" placeholder="Username (optional)">
                 <button type="submit">Login</button>
             </form>
             <p>Don't have an account? <a href="#" id="showSignup">Sign up</a></p>
@@ -599,7 +640,7 @@
         </div>
         <div id="signupForm" style="display:none;">
             <h3>Sign Up</h3>
-            <form method="GET" action="https://example.com/signup">
+            <form id="signupFormElement">
                 <input type="text" name="username" placeholder="Username" required>
                 <input type="email" name="email" placeholder="Email" required>
                 <input type="password" name="password" placeholder="Password" required>
@@ -627,7 +668,12 @@
             <h2>Roll Dice</h2>
             <div class="input-group">
                 <label for="betAmount">Bet Amount (₦):</label>
-                <input type="number" id="betAmount" min="30" step="0.001" value="30">
+                <input type="number" id="betAmount" min="10" step="1" value="10">
+                <div class="bet-controls">
+                    <button id="halfBetBtn">1/2</button>
+                    <button id="doubleBetBtn">2x</button>
+                    <button id="maxBetBtn">Max</button>
+                </div>
             </div>
             <div class="input-group">
                 <label for="betNumber">Choose a Number (1-6):</label>
@@ -735,6 +781,47 @@
         <button id="closeHistoryBtn">Close History</button>
     </div>
 
+    <div id="profileInterface" class="profile-interface" style="display:none;">
+        <h2>Profile Settings</h2>
+        <div class="profile-form">
+            <div class="input-group">
+                <label for="profileUsername">Username:</label>
+                <input type="text" id="profileUsername" disabled>
+            </div>
+            <div class="input-group">
+                <label for="profileEmail">Email:</label>
+                <input type="email" id="profileEmail">
+            </div>
+            <div class="profile-section">
+                <h3>Change Password</h3>
+                <div class="input-group">
+                    <label for="currentPassword">Current Password:</label>
+                    <input type="password" id="currentPassword">
+                </div>
+                <div class="input-group">
+                    <label for="newPassword">New Password:</label>
+                    <input type="password" id="newPassword">
+                </div>
+                <div class="input-group">
+                    <label for="confirmPassword">Confirm New Password:</label>
+                    <input type="password" id="confirmPassword">
+                </div>
+                <button id="updatePasswordBtn">Update Password</button>
+            </div>
+            <div class="profile-section">
+                <h3>Referral Program</h3>
+                <p>Share your referral code and earn ₦500 for every friend who signs up and makes a deposit!</p>
+                <div class="input-group">
+                    <label for="referralCodeDisplay">Your Referral Code:</label>
+                    <input type="text" id="referralCodeDisplay" readonly>
+                </div>
+                <button id="copyReferralBtn">Copy Referral Code</button>
+            </div>
+            <button id="saveProfileBtn">Save Changes</button>
+            <button id="closeProfileBtn">Close</button>
+        </div>
+    </div>
+
     <div id="aboutUsInterface" class="about-interface" style="display:none;">
         <h2>About Us - Dice Roll Game</h2>
         <p>Welcome to Dice Roll Game, the ultimate online betting experience where luck meets strategy! Our platform offers a fun and secure gaming environment, allowing users to deposit, bet, and withdraw their winnings seamlessly.</p>
@@ -787,6 +874,7 @@
             const gameInterface = document.getElementById('gameInterface');
             const historyInterface = document.getElementById('historyInterface');
             const aboutUsInterface = document.getElementById('aboutUsInterface');
+            const profileInterface = document.getElementById('profileInterface');
             const loginForm = document.getElementById('loginForm');
             const signupForm = document.getElementById('signupForm');
             const forgotPasswordForm = document.getElementById('forgotPasswordForm');
@@ -799,6 +887,7 @@
             const closeHistoryBtn = document.getElementById('closeHistoryBtn');
             const aboutUsBtn = document.getElementById('aboutUsBtn');
             const closeAboutUsBtn = document.getElementById('closeAboutUsBtn');
+            const closeProfileBtn = document.getElementById('closeProfileBtn');
             const logoutBtn = document.getElementById('logoutBtn');
             const rollBtn = document.getElementById('rollBtn');
             const diceImg = document.getElementById('diceImg');
@@ -822,6 +911,20 @@
             const loadingOverlay = document.getElementById('loadingOverlay');
             const downloadBtn = document.getElementById('downloadBtn');
             const resetPasswordForm = document.getElementById('resetPasswordForm');
+            const loginFormElement = document.getElementById('loginFormElement');
+            const signupFormElement = document.getElementById('signupFormElement');
+            const halfBetBtn = document.getElementById('halfBetBtn');
+            const doubleBetBtn = document.getElementById('doubleBetBtn');
+            const maxBetBtn = document.getElementById('maxBetBtn');
+            const profileUsername = document.getElementById('profileUsername');
+            const profileEmail = document.getElementById('profileEmail');
+            const currentPassword = document.getElementById('currentPassword');
+            const newPassword = document.getElementById('newPassword');
+            const confirmPassword = document.getElementById('confirmPassword');
+            const updatePasswordBtn = document.getElementById('updatePasswordBtn');
+            const referralCodeDisplay = document.getElementById('referralCodeDisplay');
+            const copyReferralBtn = document.getElementById('copyReferralBtn');
+            const saveProfileBtn = document.getElementById('saveProfileBtn');
 
             const backgroundMusic = document.getElementById('backgroundMusic');
             const loseSound = document.getElementById('loseSound');
@@ -832,14 +935,38 @@
             const volumeSlider = document.getElementById('volumeSlider');
             const musicSelector = document.getElementById('musicSelector');
 
-            let balance = parseFloat(localStorage.getItem('balance')) || 100;
+            let balance = 100;
             let isLoggedIn = false;
             let currentUser = null;
+
+            // Check for active login session when page loads
+            function checkLoginSession() {
+                const sessionUser = localStorage.getItem('currentUser');
+                if (sessionUser) {
+                    try {
+                        currentUser = JSON.parse(sessionUser);
+                        if (currentUser && currentUser.email) {
+                            isLoggedIn = true;
+                            balance = currentUser.balance || 100;
+                            showGame();
+                            updateVIPStatus();
+                            updateLeaderboard();
+                        }
+                    } catch (e) {
+                        console.error("Error parsing stored user data", e);
+                        localStorage.removeItem('currentUser');
+                    }
+                }
+            }
 
             function updateBalance(amount) {
                 balance += amount;
                 balanceSpan.textContent = `₦${balance.toFixed(2)}`;
-                localStorage.setItem('balance', balance);
+                if (currentUser) {
+                    currentUser.balance = balance;
+                    localStorage.setItem(currentUser.email, JSON.stringify(currentUser));
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                }
             }
 
             function generateReferralCode() {
@@ -853,10 +980,11 @@
                     gameInterface.style.display = 'block';
                     historyInterface.style.display = 'none';
                     aboutUsInterface.style.display = 'none';
+                    profileInterface.style.display = 'none';
                     loadingOverlay.style.display = 'none';
                     updateBalance(0);
                     checkDailyBonus();
-                }, 3000);
+                }, 1000);
             }
 
             function showAuth() {
@@ -864,6 +992,7 @@
                 gameInterface.style.display = 'none';
                 historyInterface.style.display = 'none';
                 aboutUsInterface.style.display = 'none';
+                profileInterface.style.display = 'none';
             }
 
             function showCustomPopup(message) {
@@ -880,6 +1009,8 @@
             }
 
             function addToHistory(action, amount, details) {
+                if (!currentUser) return;
+                
                 let history = JSON.parse(localStorage.getItem(`${currentUser.email}_history`)) || [];
                 history.push({
                     action,
@@ -891,6 +1022,8 @@
             }
 
             function displayHistory() {
+                if (!currentUser) return;
+                
                 let history = JSON.parse(localStorage.getItem(`${currentUser.email}_history`)) || [];
                 let historyContent = document.getElementById('historyContent');
                 if (history.length === 0) {
@@ -919,6 +1052,33 @@
                     historyContent.innerHTML = tableHTML;
                 }
             }
+            
+            function loadProfileData() {
+                if (!currentUser) return;
+                
+                profileUsername.value = currentUser.username;
+                profileEmail.value = currentUser.email;
+                referralCodeDisplay.value = currentUser.referralCode;
+            }
+            
+            // Bet amount controls
+            halfBetBtn.addEventListener('click', () => {
+                const currentBet = parseFloat(betAmountInput.value);
+                if (!isNaN(currentBet)) {
+                    betAmountInput.value = (currentBet / 2).toFixed(2);
+                }
+            });
+            
+            doubleBetBtn.addEventListener('click', () => {
+                const currentBet = parseFloat(betAmountInput.value);
+                if (!isNaN(currentBet)) {
+                    betAmountInput.value = (currentBet * 2).toFixed(2);
+                }
+            });
+            
+            maxBetBtn.addEventListener('click', () => {
+                betAmountInput.value = balance.toFixed(2);
+            });
 
             if (showSignupLink) {
                 showSignupLink.addEventListener('click', (e) => {
@@ -936,64 +1096,90 @@
                 });
             }
 
-            loginForm.addEventListener('submit', (e) => {
+            loginFormElement.addEventListener('submit', (e) => {
                 e.preventDefault();
                 const email = e.target.email.value;
                 const password = e.target.password.value;
-                const username = e.target.username.value;
-                const user = JSON.parse(localStorage.getItem(email));
-                if (user && user.password === password) {
-                    currentUser = user;
-                    isLoggedIn = true;
-                    showGame();
-                    updateLeaderboard();
-                    checkDailyBonus();
+                
+                // Check if user exists
+                const userData = localStorage.getItem(email);
+                if (userData) {
+                    const user = JSON.parse(userData);
+                    if (user.password === password) {
+                        if (user.deleted) {
+                            showCustomPopup('This account has been deleted. Please sign up again.');
+                            return;
+                        }
+                        
+                        currentUser = user;
+                        balance = user.balance || 100;
+                        isLoggedIn = true;
+                        
+                        // Save current login session
+                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                        
+                        showGame();
+                        updateLeaderboard();
+                        checkDailyBonus();
+                    } else {
+                        showCustomPopup('Invalid password. Please try again.');
+                    }
                 } else {
-                    showCustomPopup('Invalid email or password');
+                    showCustomPopup('No account found with this email address.');
                 }
             });
 
-            signupForm.addEventListener('submit', (e) => {
+            signupFormElement.addEventListener('submit', (e) => {
                 e.preventDefault();
                 const username = e.target.username.value;
                 const email = e.target.email.value;
                 const password = e.target.password.value;
                 const referralCode = e.target.referralCode.value;
-                if (localStorage.getItem(email)) {
-                    showCustomPopup('Email already exists');
-                    return;
+                
+                // Check if email already exists
+                const existingUser = localStorage.getItem(email);
+                if (existingUser) {
+                    const user = JSON.parse(existingUser);
+                    if (!user.deleted) {
+                        showCustomPopup('An account with this email already exists. Please login instead.');
+                        return;
+                    }
                 }
+                
                 const newUser = {
                     username,
                     email,
                     password,
                     referralCode: generateReferralCode(),
                     balance: 100,
-                    referredBy: referralCode || null
+                    referredBy: referralCode || null,
+                    deleted: false
                 };
+                
                 localStorage.setItem(email, JSON.stringify(newUser));
+                
+                // Check referral code and add bonus after deposit
                 if (referralCode) {
-                    const referrer = Object.values(localStorage).find(item => {
-                        try {
-                            const parsed = JSON.parse(item);
-                            return parsed.referralCode === referralCode;
-                        } catch {
-                            return false;
-                        }
-                    });
-                    if (referrer) {
-                        const referrerData = JSON.parse(referrer);
-                        referrerData.balance += 20; // 20% of 100 (new user's initial balance)
-                        localStorage.setItem(referrerData.email, JSON.stringify(referrerData));
-                        addToHistory('Referral Bonus', 20, `New user signup: ${email}`);
-                    }
+                    // Store referral info for later processing after deposit
+                    localStorage.setItem(`referral_${email}`, referralCode);
                 }
+                
                 currentUser = newUser;
+                balance = newUser.balance;
                 isLoggedIn = true;
+                
+                // Save current login session
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                
                 addToHistory('Sign Up', 100, 'Initial balance');
                 showGame();
                 updateLeaderboard();
                 checkDailyBonus();
+                
+                // Show popup about referral program
+                if (referralCode) {
+                    showCustomPopup('Thank you for signing up! Your referee will receive ₦500 bonus after you make your first deposit.');
+                }
             });
 
             forgotPasswordLink.addEventListener('click', (e) => {
@@ -1012,9 +1198,15 @@
             resetPasswordForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 const email = e.target.resetEmail.value;
-                const user = JSON.parse(localStorage.getItem(email));
+                const userData = localStorage.getItem(email);
                 
-                if (user) {
+                if (userData) {
+                    const user = JSON.parse(userData);
+                    if (user.deleted) {
+                        showCustomPopup('This account has been deleted. Please sign up again.');
+                        return;
+                    }
+                    
                     // Generate temporary password
                     const tempPassword = Math.random().toString(36).slice(-8);
                     user.password = tempPassword;
@@ -1022,7 +1214,7 @@
                     
                     // In a real application, you would send this via email
                     // For demo purposes, we'll show it in a popup
-                    showCustomPopup(`A temporary password has been generated for your account: ${tempPassword}\n\nPlease use this to login and change your password immediately.`);
+                    showCustomPopup(`A temporary password has been generated for your account: ${tempPassword}<br><br>Please use this to login and change your password immediately in the profile section.`);
                     
                     forgotPasswordForm.style.display = 'none';
                     loginForm.style.display = 'block';
@@ -1033,16 +1225,84 @@
 
             profileBtn.addEventListener('click', () => {
                 if (currentUser) {
-                    let referralBalance = 0;
-                    Object.values(localStorage).forEach(item => {
-                        try {
-                            const user = JSON.parse(item);
-                            if (user.referredBy === currentUser.referralCode) {
-                                referralBalance += 20; // 20% of 100 (new user's initial balance)
-                            }
-                        } catch {}
-                    });
-                    showCustomPopup(`Username: ${currentUser.username}<br>Email: ${currentUser.email}<br>Referral Code: ${currentUser.referralCode}<br>Referral Balance: ₦${referralBalance.toFixed(2)}`);
+                    gameInterface.style.display = 'none';
+                    profileInterface.style.display = 'block';
+                    loadProfileData();
+                }
+            });
+            
+            closeProfileBtn.addEventListener('click', () => {
+                profileInterface.style.display = 'none';
+                gameInterface.style.display = 'block';
+            });
+            
+            copyReferralBtn.addEventListener('click', () => {
+                referralCodeDisplay.select();
+                document.execCommand('copy');
+                showCustomPopup('Referral code copied to clipboard! Share with friends to earn ₦500 for each referral that deposits.');
+            });
+            
+            updatePasswordBtn.addEventListener('click', () => {
+                if (!currentUser) return;
+                
+                const currentPwd = currentPassword.value;
+                const newPwd = newPassword.value;
+                const confirmPwd = confirmPassword.value;
+                
+                if (!currentPwd || !newPwd || !confirmPwd) {
+                    showCustomPopup('Please fill in all password fields.');
+                    return;
+                }
+                
+                if (currentPwd !== currentUser.password) {
+                    showCustomPopup('Current password is incorrect.');
+                    return;
+                }
+                
+                if (newPwd !== confirmPwd) {
+                    showCustomPopup('New passwords do not match.');
+                    return;
+                }
+                
+                // Update password
+                currentUser.password = newPwd;
+                localStorage.setItem(currentUser.email, JSON.stringify(currentUser));
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                
+                showCustomPopup('Password updated successfully!');
+                
+                // Clear fields
+                currentPassword.value = '';
+                newPassword.value = '';
+                confirmPassword.value = '';
+            });
+            
+            saveProfileBtn.addEventListener('click', () => {
+                if (!currentUser) return;
+                
+                const newEmail = profileEmail.value;
+                
+                if (!newEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+                    showCustomPopup('Please enter a valid email address.');
+                    return;
+                }
+                
+                if (newEmail !== currentUser.email) {
+                    // Check if new email already exists
+                    if (localStorage.getItem(newEmail)) {
+                        showCustomPopup('This email is already in use by another account.');
+                        return;
+                    }
+                    
+                    // Save user data with new email
+                    const userData = JSON.stringify(currentUser);
+                    localStorage.removeItem(currentUser.email);
+                    
+                    currentUser.email = newEmail;
+                    localStorage.setItem(newEmail, JSON.stringify(currentUser));
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    
+                    showCustomPopup('Email updated successfully!');
                 }
             });
 
@@ -1050,6 +1310,7 @@
                 gameInterface.style.display = 'none';
                 historyInterface.style.display = 'block';
                 aboutUsInterface.style.display = 'none';
+                profileInterface.style.display = 'none';
                 displayHistory();
             });
 
@@ -1063,6 +1324,7 @@
                 gameInterface.style.display = 'none';
                 historyInterface.style.display = 'none';
                 aboutUsInterface.style.display = 'block';
+                profileInterface.style.display = 'none';
             });
 
             closeAboutUsBtn.addEventListener('click', () => {
@@ -1072,7 +1334,9 @@
 
             logoutBtn.addEventListener('click', () => {
                 isLoggedIn = false;
+                localStorage.removeItem('currentUser');
                 currentUser = null;
+                balance = 100;
                 showAuth();
                 showCustomPopup('You have been logged out successfully.');
             });
@@ -1097,8 +1361,8 @@
                 let betAmount = parseFloat(betAmountInput.value);
                 let betNumber = parseInt(betNumberInput.value);
 
-                if (isNaN(betAmount) || betAmount < 30) {
-                    showCustomPopup('Please enter a valid bet amount (₦30 minimum).');
+                if (isNaN(betAmount) || betAmount < 10) {
+                    showCustomPopup('Please enter a valid bet amount (₦10 minimum).');
                     return;
                 }
 
@@ -1114,6 +1378,10 @@
 
                 updateBalance(-betAmount);
                 addToHistory('Bet', -betAmount, `Bet on number ${betNumber}`);
+
+                // Update bet count for VIP status
+                const bets = parseInt(localStorage.getItem(`${currentUser.email}_bets`) || '0') + 1;
+                localStorage.setItem(`${currentUser.email}_bets`, bets.toString());
 
                 // Calculate jackpot chance
                 const jackpotRoll = Math.random();
@@ -1151,14 +1419,22 @@
                         loseSound.play();
                     }
 
+                    // Update streak status
+                    updateStreak();
+                    
                     // Update VIP status
                     updateVIPStatus();
                     updateLeaderboard();
+                    updateBetHistory({
+                        amount: betAmount,
+                        result: diceResult,
+                        win: diceResult === betNumber || isJackpot
+                    });
                 }, 2000);
             });
 
             function getVIPBonus() {
-                const bets = JSON.parse(localStorage.getItem(`${currentUser.email}_bets`) || '0');
+                const bets = parseInt(localStorage.getItem(`${currentUser.email}_bets`) || '0');
                 if (bets >= gameConfig.vipLevels.gold.minBets) return gameConfig.vipLevels.gold.payoutBonus;
                 if (bets >= gameConfig.vipLevels.silver.minBets) return gameConfig.vipLevels.silver.payoutBonus;
                 if (bets >= gameConfig.vipLevels.bronze.minBets) return gameConfig.vipLevels.bronze.payoutBonus;
@@ -1166,7 +1442,9 @@
             }
 
             function updateVIPStatus() {
-                const bets = JSON.parse(localStorage.getItem(`${currentUser.email}_bets`) || '0');
+                if (!currentUser) return;
+                
+                const bets = parseInt(localStorage.getItem(`${currentUser.email}_bets`) || '0');
                 const vipBadge = document.getElementById('vipBadge');
                 
                 if (bets >= gameConfig.vipLevels.gold.minBets) {
@@ -1178,6 +1456,9 @@
                 } else if (bets >= gameConfig.vipLevels.bronze.minBets) {
                     vipBadge.className = 'vip-badge vip-bronze';
                     vipBadge.textContent = 'VIP BRONZE';
+                } else {
+                    vipBadge.className = 'vip-badge';
+                    vipBadge.textContent = '';
                 }
             }
 
@@ -1287,41 +1568,24 @@
                 let accountNumber = accountNumberInput.value;
                 let accountName = accountNameInput.value;
 
-                // This is a mock verification. In a real application, you would verify on your server.
-                fetch('https://yourserver.com/api/withdraw', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        amount: withdrawalAmount,
-                        bank: bank,
-                        accountNumber: accountNumber,
-                        accountName: accountName,
-                        email: currentUser.email
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showCustomPopup('Withdrawal successful. Processing within 24 hours.');
-                        updateBalance(-withdrawalAmount);
-                        addToHistory('Withdrawal', -withdrawalAmount, `Withdrawal to ${bank} - ${accountNumber}`);
-                        updateLeaderboard();
-                    } else {
-                        showCustomPopup('Withdrawal failed. Try again later.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error processing withdrawal:', error);
-                    showCustomPopup('Network error. Try again later.');
-                });
-
-                fiatWithdrawForm.style.display = 'none';
-                fiatWithdrawAmountInput.value = '';
-                bankSelect.value = '';
-                accountNumberInput.value = '';
-                accountNameInput.value = '';
+                // Simulate a withdrawal process
+                loadingOverlay.style.display = 'flex';
+                
+                setTimeout(() => {
+                    loadingOverlay.style.display = 'none';
+                    showCustomPopup('Withdrawal successful. Processing within 24 hours.');
+                    updateBalance(-withdrawalAmount);
+                    addToHistory('Withdrawal', -withdrawalAmount, `Withdrawal to ${bank} - ${accountNumber}`);
+                    updateLeaderboard();
+                    
+                    // Reset form
+                    fiatWithdrawForm.style.display = 'none';
+                    fiatWithdrawAmountInput.value = '';
+                    bankSelect.value = '';
+                    accountNumberInput.value = '';
+                    accountNameInput.value = '';
+                    confirmWithdrawBtn.style.display = 'none';
+                }, 2000);
             });
 
             fiatDepositBtn.addEventListener('click', () => {
@@ -1340,32 +1604,65 @@
                     return;
                 }
                 document.getElementById('depositInterface').style.display = 'none';
-                payWithPaystack(depositAmount);
-            });
-
-            function payWithPaystack(amount) {
-                let handler = PaystackPop.setup({
-                    key: 'pk_live_342eab193485c80dd1f3936ddd590723a3817145',
-                    email: currentUser.email,
-                    amount: amount * 100, // Paystack expects the amount in kobo
-                    currency: 'NGN',
-                    callback: function(response) {
-                        verifyTransaction(response.reference, amount);
-                    },
-                    onClose: function() {
-                        showCustomPopup('Transaction was not completed.');
+                
+                // Check if this is a first deposit and there's a referral code
+                const referralCode = localStorage.getItem(`referral_${currentUser.email}`);
+                
+                loadingOverlay.style.display = 'flex';
+                
+                setTimeout(() => {
+                    loadingOverlay.style.display = 'none';
+                    
+                    // Process referral bonus after deposit
+                    if (referralCode) {
+                        processReferralBonus(referralCode);
+                        localStorage.removeItem(`referral_${currentUser.email}`);
                     }
-                });
-                handler.openIframe();
-            }
-
-            function verifyTransaction(reference, amount) {
-                // This is a mock verification. In a real application, you would verify on your server.
-                showCustomPopup('Deposit successful!');
-                updateBalance(amount);
-                addToHistory('Deposit', amount, `Deposit via Paystack (Ref: ${reference})`);
-                depositSuccessSound.play();
-                updateLeaderboard();
+                    
+                    updateBalance(depositAmount);
+                    addToHistory('Deposit', depositAmount, `Deposit via Paystack`);
+                    showCustomPopup('Deposit successful!');
+                    depositSuccessSound.play();
+                    updateLeaderboard();
+                }, 2000);
+            });
+            
+            function processReferralBonus(referralCode) {
+                // Find referrer by referral code
+                let referrerFound = false;
+                
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && !key.includes('_')) {
+                        try {
+                            const userData = JSON.parse(localStorage.getItem(key));
+                            if (userData && userData.referralCode === referralCode) {
+                                // Add bonus to referrer
+                                userData.balance += 500; // ₦500 bonus
+                                localStorage.setItem(key, JSON.stringify(userData));
+                                
+                                // Add history record for referrer
+                                let referrerHistory = JSON.parse(localStorage.getItem(`${userData.email}_history`)) || [];
+                                referrerHistory.push({
+                                    action: 'Referral Bonus',
+                                    amount: 500,
+                                    details: `Bonus for referring ${currentUser.username}`,
+                                    timestamp: new Date().toISOString()
+                                });
+                                localStorage.setItem(`${userData.email}_history`, JSON.stringify(referrerHistory));
+                                
+                                referrerFound = true;
+                                break;
+                            }
+                        } catch (e) {
+                            // Skip invalid entries
+                        }
+                    }
+                }
+                
+                if (referrerFound) {
+                    showCustomPopup('Referral bonus of ₦500 has been credited to your referee!');
+                }
             }
 
             downloadBtn.addEventListener('click', function() {
@@ -1402,92 +1699,107 @@
                 backgroundMusic.src = musicSelector.value;
                 backgroundMusic.play();
             });
-
-            setInterval(updateLeaderboard, 300000); // Updates every 5 minutes
-        });
-
-        const darkModeToggle = document.querySelector('.dark-mode-toggle');
-        darkModeToggle.addEventListener('click', () => {
-            document.body.classList.toggle('dark-mode');
-        });
-
-        // Chat functionality
-        const chatContainer = document.querySelector('.chat-container');
-        document.querySelector('.chat-toggle').addEventListener('click', () => {
-            chatContainer.classList.toggle('show');
-        });
-
-        // Confetti animation for big wins
-        function createConfetti() {
-            for(let i = 0; i < 100; i++) {
-                const confetti = document.createElement('div');
-                confetti.className = 'confetti';
-                confetti.style.left = Math.random() * 100 + 'vw';
-                confetti.style.backgroundColor = ['#ff0', '#f0f', '#0ff'][Math.floor(Math.random() * 3)];
-                document.body.appendChild(confetti);
-                setTimeout(() => confetti.remove(), 3000);
-            }
-        }
-
-        placeBetBtn.addEventListener('click', () => {
-            // ...existing betting logic...
             
-            if (isJackpot || (diceResult === betNumber && betAmount >= 1000)) {
-                createConfetti();
-            }
-            
-            // Update bet history
-            updateBetHistory({
-                amount: betAmount,
-                result: diceResult,
-                win: diceResult === betNumber
-            });
-        });
-
-        // Streak bonus handling
-        function updateStreak() {
-            const streak = parseInt(localStorage.getItem(`${currentUser.email}_streak`) || '0');
-            const lastPlay = localStorage.getItem(`${currentUser.email}_lastPlay`);
-            const today = new Date().toDateString();
-            
-            if (lastPlay === today) return;
-            
-            if (lastPlay === new Date(Date.now() - 86400000).toDateString()) {
-                localStorage.setItem(`${currentUser.email}_streak`, streak + 1);
-                if ((streak + 1) % 5 === 0) {
-                    updateBalance(500); // Bonus for 5-day streak
-                    showCustomPopup('5-day Streak Bonus: ₦500 added!');
+            function updateBetHistory(bet) {
+                const recentBets = document.getElementById('recentBets');
+                const betItem = document.createElement('div');
+                betItem.style.margin = '5px 0';
+                betItem.style.padding = '5px';
+                betItem.style.borderBottom = '1px solid #eee';
+                
+                betItem.innerHTML = `
+                    <div>Amount: ₦${bet.amount.toFixed(2)}</div>
+                    <div>Result: ${bet.result}</div>
+                    <div style="color: ${bet.win ? '#2ecc71' : '#e74c3c'}">${bet.win ? 'Win' : 'Loss'}</div>
+                `;
+                
+                // Keep only the last 10 bets
+                if (recentBets.children.length >= 10) {
+                    recentBets.removeChild(recentBets.firstChild);
                 }
-            } else {
-                localStorage.setItem(`${currentUser.email}_streak`, 1);
+                
+                recentBets.appendChild(betItem);
             }
             
-            localStorage.setItem(`${currentUser.email}_lastPlay`, today);
-            document.getElementById('streakCount').textContent = localStorage.getItem(`${currentUser.email}_streak`);
-        }
+            // Streak bonus handling
+            function updateStreak() {
+                if (!currentUser) return;
+                
+                const streak = parseInt(localStorage.getItem(`${currentUser.email}_streak`) || '0');
+                const lastPlay = localStorage.getItem(`${currentUser.email}_lastPlay`);
+                const today = new Date().toDateString();
+                
+                if (lastPlay === today) return;
+                
+                if (lastPlay === new Date(Date.now() - 86400000).toDateString()) {
+                    // Consecutive day
+                    const newStreak = streak + 1;
+                    localStorage.setItem(`${currentUser.email}_streak`, newStreak);
+                    
+                    if (newStreak % 5 === 0) {
+                        // Bonus for every 5-day streak
+                        updateBalance(500);
+                        addToHistory('Streak Bonus', 500, `${newStreak}-day streak bonus`);
+                        showCustomPopup(`${newStreak}-day Streak Bonus: ₦500 added!`);
+                    }
+                } else if (lastPlay) {
+                    // Streak broken
+                    localStorage.setItem(`${currentUser.email}_streak`, 1);
+                } else {
+                    // First time playing
+                    localStorage.setItem(`${currentUser.email}_streak`, 1);
+                }
+                
+                localStorage.setItem(`${currentUser.email}_lastPlay`, today);
+                document.getElementById('streakCount').textContent = localStorage.getItem(`${currentUser.email}_streak`);
+                
+                // Show streak bonus indicator
+                const streakCount = parseInt(localStorage.getItem(`${currentUser.email}_streak`) || '0');
+                if (streakCount > 1) {
+                    document.querySelector('.streak-bonus').style.display = 'block';
+                }
+            }
 
-        // Update the login/signup success handlers to initialize streaks
-        function onLoginSuccess() {
-            showGame();
-            updateStreak();
-            document.querySelector('.streak-bonus').style.display = 'block';
-        }
+            // Confetti animation for big wins
+            function createConfetti() {
+                for(let i = 0; i < 100; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.backgroundColor = ['#ff0', '#f0f', '#0ff'][Math.floor(Math.random() * 3)];
+                    document.body.appendChild(confetti);
+                    setTimeout(() => confetti.remove(), 3000);
+                }
+            }
 
-        // Initialize features when page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            // ...existing initialization...
+            // Check for login session when page loads
+            checkLoginSession();
+            
+            // Dark mode toggle
+            const darkModeToggle = document.querySelector('.dark-mode-toggle');
+            darkModeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('dark-mode');
+            });
+
+            // Chat toggle
+            document.querySelector('.chat-toggle').addEventListener('click', () => {
+                document.querySelector('.chat-container').classList.toggle('show');
+            });
             
             // Initialize chat with mock messages
             const mockMessages = [
                 { user: 'LuckyPlayer', message: 'Just won 5000!' },
-                { user: 'DiceKing', message: 'Anyone going for the jackpot?' }
+                { user: 'DiceKing', message: 'Anyone going for the jackpot?' },
+                { user: 'Admin', message: 'Referral bonus increased to ₦500!' }
             ];
             
             const chatMessages = document.querySelector('.chat-messages');
             mockMessages.forEach(msg => {
                 chatMessages.innerHTML += `<p><strong>${msg.user}:</strong> ${msg.message}</p>`;
             });
+            
+            // Update leaderboard periodically
+            setInterval(updateLeaderboard, 300000); // Updates every 5 minutes
         });
     </script>
 </body>
-</html>
