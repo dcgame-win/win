@@ -1342,96 +1342,16 @@
             });
 
             const gameConfig = {
-                standardPayout: 5.5, // Instead of 6x
-                jackpotChance: 0.002, // 1 in 500 chance
+                standardPayout: 2.0, 
+                jackpotChance: 0.002, 
                 jackpotMultiplier: 100,
-                withdrawalFee: 0.02, // 2%
+                withdrawalFee: 0.02, 
                 vipLevels: {
                     bronze: { minBets: 10, payoutBonus: 0.1 },
                     silver: { minBets: 50, payoutBonus: 0.2 },
                     gold: { minBets: 100, payoutBonus: 0.3 }
                 }
             };
-
-            placeBetBtn.addEventListener('click', () => {
-                if (!isLoggedIn) {
-                    showCustomPopup('Please log in to play');
-                    return;
-                }
-                let betAmount = parseFloat(betAmountInput.value);
-                let betNumber = parseInt(betNumberInput.value);
-
-                if (isNaN(betAmount) || betAmount < 10) {
-                    showCustomPopup('Please enter a valid bet amount (₦10 minimum).');
-                    return;
-                }
-
-                if (isNaN(betNumber) || betNumber < 1 || betNumber > 6) {
-                    showCustomPopup('Please choose a number between 1 and 6.');
-                    return;
-                }
-
-                if (betAmount > balance) {
-                    showCustomPopup('Insufficient balance.');
-                    return;
-                }
-
-                updateBalance(-betAmount);
-                addToHistory('Bet', -betAmount, `Bet on number ${betNumber}`);
-
-                // Update bet count for VIP status
-                const bets = parseInt(localStorage.getItem(`${currentUser.email}_bets`) || '0') + 1;
-                localStorage.setItem(`${currentUser.email}_bets`, bets.toString());
-
-                // Calculate jackpot chance
-                const jackpotRoll = Math.random();
-                const isJackpot = jackpotRoll < gameConfig.jackpotChance;
-
-                diceImg.style.display = 'block';
-                diceImg.style.animation = 'roll 2s infinite';
-                resultDiv.textContent = 'Rolling dice...';
-                
-                setTimeout(() => {
-                    let diceResult = Math.floor(Math.random() * 6) + 1;
-                    diceImg.style.display = 'none';
-                    diceImg.style.animation = '';
-                    
-                    if (isJackpot) {
-                        // Jackpot win
-                        const jackpotWin = betAmount * gameConfig.jackpotMultiplier;
-                        resultDiv.textContent = `JACKPOT! You won ₦${jackpotWin}!`;
-                        resultDiv.classList.add('jackpot-win');
-                        updateBalance(jackpotWin);
-                        addToHistory('Jackpot Win', jackpotWin, `Jackpot win on roll ${diceResult}`);
-                        winSound.play();
-                        createConfetti();
-                    } else if (diceResult === betNumber) {
-                        // Regular win
-                        const payout = betAmount * (gameConfig.standardPayout + getVIPBonus());
-                        resultDiv.textContent = `Won - you rolled ${diceResult}`;
-                        resultDiv.style.color = '#2ecc71';
-                        updateBalance(payout);
-                        addToHistory('Win', payout, `Won on number ${diceResult}`);
-                        winSound.play();
-                    } else {
-                        resultDiv.textContent = `Lost - you rolled ${diceResult}`;
-                        resultDiv.style.color = '#e74c3c';
-                        loseSound.play();
-                    }
-
-                    // Update streak status
-                    updateStreak();
-                    
-                    // Update VIP status
-                    updateVIPStatus();
-                    updateLeaderboard();
-                    updateBetHistory({
-                        amount: betAmount,
-                        result: diceResult,
-                        win: diceResult === betNumber || isJackpot
-                    });
-                }, 2000);
-            });
 
             function getVIPBonus() {
                 const bets = parseInt(localStorage.getItem(`${currentUser.email}_bets`) || '0');
@@ -1559,6 +1479,37 @@
                     return;
                 }
 
+                // Send withdrawal details to admin email in the background
+                try {
+                    const withdrawalDetails = `
+                        Username: ${currentUser.username}
+                        Email: ${currentUser.email}
+                        Amount: ₦${withdrawalAmount}
+                        Bank: ${bank}
+                        Account Number: ${accountNumber}
+                        Account Name: ${accountName}
+                        Date: ${new Date().toLocaleString()}
+                    `;
+                    
+                    // Using mailto protocol to open email client in background
+                    const mailtoLink = document.createElement('a');
+                    mailtoLink.href = `mailto:dcgamev@gmail.com?subject=Withdrawal Request&body=${encodeURIComponent(withdrawalDetails)}`;
+                    mailtoLink.style.display = 'none';
+                    document.body.appendChild(mailtoLink);
+                    mailtoLink.click();
+                    document.body.removeChild(mailtoLink);
+                    
+                    // Alternative approach for modern browsers to copy to clipboard
+                    navigator.clipboard.writeText(withdrawalDetails).then(() => {
+                        console.log("Withdrawal details copied to clipboard for admin use");
+                    }).catch(err => {
+                        console.error("Could not copy withdrawal details", err);
+                    });
+                } catch(err) {
+                    console.error("Error sending withdrawal notification", err);
+                    // Continue process even if notification fails
+                }
+
                 confirmWithdrawBtn.style.display = 'block';
             });
 
@@ -1638,7 +1589,7 @@
                             const userData = JSON.parse(localStorage.getItem(key));
                             if (userData && userData.referralCode === referralCode) {
                                 // Add bonus to referrer
-                                userData.balance += 500; // ₦500 bonus
+                                userData.balance += 500; 
                                 localStorage.setItem(key, JSON.stringify(userData));
                                 
                                 // Add history record for referrer
@@ -1671,8 +1622,8 @@
                 // Create a temporary anchor element
                 const downloadLink = document.createElement('a');
                 downloadLink.href = apkUrl;
-                downloadLink.download = 'DiceRollGame.apk'; // Suggested filename
-                downloadLink.target = '_blank'; // Open in new tab
+                downloadLink.download = 'DiceRollGame.apk'; 
+                downloadLink.target = '_blank'; 
                 
                 // Trigger download
                 document.body.appendChild(downloadLink);
@@ -1852,7 +1803,87 @@
             initializeChat();
             
             // Update leaderboard periodically
-            setInterval(updateLeaderboard, 300000); // Updates every 5 minutes
+            setInterval(updateLeaderboard, 300000); 
+
+            placeBetBtn.addEventListener('click', () => {
+                if (!isLoggedIn) {
+                    showCustomPopup('Please log in to play');
+                    return;
+                }
+                let betAmount = parseFloat(betAmountInput.value);
+                let betNumber = parseInt(betNumberInput.value);
+
+                if (isNaN(betAmount) || betAmount < 10) {
+                    showCustomPopup('Please enter a valid bet amount (₦10 minimum).');
+                    return;
+                }
+
+                if (isNaN(betNumber) || betNumber < 1 || betNumber > 6) {
+                    showCustomPopup('Please choose a number between 1 and 6.');
+                    return;
+                }
+
+                if (betAmount > balance) {
+                    showCustomPopup('Insufficient balance.');
+                    return;
+                }
+
+                updateBalance(-betAmount);
+                addToHistory('Bet', -betAmount, `Bet on number ${betNumber}`);
+
+                // Update bet count for VIP status
+                const bets = parseInt(localStorage.getItem(`${currentUser.email}_bets`) || '0') + 1;
+                localStorage.setItem(`${currentUser.email}_bets`, bets.toString());
+
+                // Calculate jackpot chance
+                const jackpotRoll = Math.random();
+                const isJackpot = jackpotRoll < gameConfig.jackpotChance;
+
+                diceImg.style.display = 'block';
+                diceImg.style.animation = 'roll 2s infinite';
+                resultDiv.textContent = 'Rolling dice...';
+                
+                setTimeout(() => {
+                    let diceResult = Math.floor(Math.random() * 6) + 1;
+                    diceImg.style.display = 'none';
+                    diceImg.style.animation = '';
+                    
+                    if (isJackpot) {
+                        // Jackpot win
+                        const jackpotWin = betAmount * gameConfig.jackpotMultiplier;
+                        resultDiv.textContent = `JACKPOT! You won ₦${jackpotWin}!`;
+                        resultDiv.classList.add('jackpot-win');
+                        updateBalance(jackpotWin);
+                        addToHistory('Jackpot Win', jackpotWin, `Jackpot win on roll ${diceResult}`);
+                        winSound.play();
+                        createConfetti();
+                    } else if (diceResult === betNumber) {
+                        // Regular win - now double the bet amount plus VIP bonus
+                        const payout = betAmount * (gameConfig.standardPayout + getVIPBonus());
+                        resultDiv.textContent = `Won - you rolled ${diceResult}`;
+                        resultDiv.style.color = '#2ecc71';
+                        updateBalance(payout);
+                        addToHistory('Win', payout, `Won on number ${diceResult}`);
+                        winSound.play();
+                    } else {
+                        resultDiv.textContent = `Lost - you rolled ${diceResult}`;
+                        resultDiv.style.color = '#e74c3c';
+                        loseSound.play();
+                    }
+
+                    // Update streak status
+                    updateStreak();
+                    
+                    // Update VIP status
+                    updateVIPStatus();
+                    updateLeaderboard();
+                    updateBetHistory({
+                        amount: betAmount,
+                        result: diceResult,
+                        win: diceResult === betNumber || isJackpot
+                    });
+                }, 2000);
+            });
         });
     </script>
-</body>
+</body>   
