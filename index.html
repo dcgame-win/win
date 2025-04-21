@@ -1787,16 +1787,69 @@
             });
             
             // Initialize chat with mock messages
-            const mockMessages = [
-                { user: 'LuckyPlayer', message: 'Just won 5000!' },
-                { user: 'DiceKing', message: 'Anyone going for the jackpot?' },
-                { user: 'Admin', message: 'Referral bonus increased to ₦500!' }
-            ];
-            
             const chatMessages = document.querySelector('.chat-messages');
-            mockMessages.forEach(msg => {
-                chatMessages.innerHTML += `<p><strong>${msg.user}:</strong> ${msg.message}</p>`;
+            const chatInput = document.querySelector('.chat-input input');
+            const chatSendBtn = document.querySelector('.chat-input button');
+            
+            // Load saved chat messages or initialize with mock messages
+            function initializeChat() {
+                const savedMessages = JSON.parse(localStorage.getItem('chatMessages')) || [
+                    { user: 'LuckyPlayer', message: 'Just won 5000!' },
+                    { user: 'DiceKing', message: 'Anyone going for the jackpot?' },
+                    { user: 'Admin', message: 'Referral bonus increased to ₦500!' }
+                ];
+                chatMessages.innerHTML = '';
+                savedMessages.forEach(msg => {
+                    appendChatMessage(msg.user, msg.message);
+                });
+            }
+            
+            // Function to append a new chat message
+            function appendChatMessage(user, message) {
+                const msgElement = document.createElement('p');
+                const isCurrentUser = currentUser && user === currentUser.username;
+                msgElement.innerHTML = `<strong style="${isCurrentUser ? 'color: #27AE60;' : ''}">${user}:</strong> ${message}`;
+                chatMessages.appendChild(msgElement);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                
+                // Save to localStorage
+                const savedMessages = JSON.parse(localStorage.getItem('chatMessages')) || [
+                    { user: 'LuckyPlayer', message: 'Just won 5000!' },
+                    { user: 'DiceKing', message: 'Anyone going for the jackpot?' },
+                    { user: 'Admin', message: 'Referral bonus increased to ₦500!' }
+                ];
+                savedMessages.push({ user, message });
+                // Keep only the last 50 messages
+                if (savedMessages.length > 50) {
+                    savedMessages.shift();
+                }
+                localStorage.setItem('chatMessages', JSON.stringify(savedMessages));
+            }
+            
+            // Send chat message
+            function sendChatMessage() {
+                if (!currentUser) {
+                    showCustomPopup('Please log in to chat');
+                    return;
+                }
+                
+                const message = chatInput.value.trim();
+                if (message) {
+                    appendChatMessage(currentUser.username, message);
+                    chatInput.value = '';
+                }
+            }
+            
+            // Chat event listeners
+            chatSendBtn.addEventListener('click', sendChatMessage);
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendChatMessage();
+                }
             });
+            
+            // Initialize chat when page loads
+            initializeChat();
             
             // Update leaderboard periodically
             setInterval(updateLeaderboard, 300000); // Updates every 5 minutes
